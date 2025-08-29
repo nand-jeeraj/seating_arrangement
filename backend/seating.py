@@ -19,7 +19,7 @@ def normalize_program(code: str) -> str:
 
 
 def is_valid_position(seat_grid, r, c, student) -> bool:
-    """Check if placing a student at (r, c) does not put same program in LEFT, RIGHT, UP, DOWN."""
+    
     rows = len(seat_grid)
     cols = len(seat_grid[0]) if seat_grid else 0
     this_prog = normalize_program(student["program_code"])
@@ -47,31 +47,30 @@ def is_valid_position(seat_grid, r, c, student) -> bool:
     return True
 
 
-def fill_seating(class_students, rows, cols):
-    """Fill seating grid ensuring no same program neighbors in 4 directions."""
-    seat_grid = [[None for _ in range(cols)] for _ in range(rows)]
-    positions_all = [(r, c) for r in range(rows) for c in range(cols)]
-    random.shuffle(positions_all)
+def fill_seating(class_students, rows, cols, max_attempts=1000):
+    
+    for attempt in range(max_attempts):
+        seat_grid = [[None for _ in range(cols)] for _ in range(rows)]
+        positions_all = [(r, c) for r in range(rows) for c in range(cols)]
+        random.shuffle(class_students) 
 
-    unplaced = []
-    for student in class_students:
-        placed = False
-        random.shuffle(positions_all)
-        for (r, c) in positions_all:
-            if seat_grid[r][c] is None and is_valid_position(seat_grid, r, c, student):
-                seat_grid[r][c] = student
-                placed = True
-                break
-        if not placed:
-            unplaced.append(student)
-
-    # Force place leftovers (may break rule if impossible)
-    for student in unplaced:
-        for (r, c) in positions_all:
-            if seat_grid[r][c] is None:
-                seat_grid[r][c] = student
+        valid = True
+        for student in class_students:
+            placed = False
+            random.shuffle(positions_all)
+            for (r, c) in positions_all:
+                if seat_grid[r][c] is None and is_valid_position(seat_grid, r, c, student):
+                    seat_grid[r][c] = student
+                    placed = True
+                    break
+            if not placed:
+                valid = False
                 break
 
+        if valid:
+            return seat_grid  
+
+   
     return seat_grid
 
 
